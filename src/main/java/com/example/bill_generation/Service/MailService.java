@@ -72,7 +72,7 @@ public class MailService {
         return "Mail sent successfully.";
     }
 
-    @Scheduled(cron = "0 2 14 * * *")
+    @Scheduled(cron = "0 11 11 * * *")
     public String sendDailyReportOnStartup1() {
         List<Product> products = productRepository.findAll();
 
