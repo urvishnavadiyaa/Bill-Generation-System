@@ -1,8 +1,6 @@
-package com.example.bill_generation.Service;
+package com.example.bill_generation.ScheduledTask;
 
-import com.example.bill_generation.Model.Customer;
 import com.example.bill_generation.Model.Product;
-import com.example.bill_generation.Repository.CustomerRepository;
 import com.example.bill_generation.Repository.ProductRepository;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,41 +8,36 @@ import org.springframework.core.io.FileSystemResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.time.LocalDate;
 import java.util.List;
 
-@Component
-public class MailService {
+@Service
+public class SendDailyReport {
 
     @Autowired
     private JavaMailSender mailSender;
 
     @Autowired
-    private CustomerRepository customerRepository;
+    private ProductRepository productRepository;
 
-    public String sendDailyReportOnStartup(LocalDate date) {
-        LocalDate today = LocalDate.now();
-        List<Customer> customers = customerRepository.findByLocalDate(date);
-
-        if (customers.isEmpty()) {
-            return "No records found for today.";
-        }
+    @Scheduled(cron = "0 0 12 * * *")
+    public String sendDailyReportOnStartup1() {
+        List<Product> products = productRepository.findAll();
 
         File csvFile = new File("customers.csv");
 
         try (PrintWriter writer = new PrintWriter(csvFile)) {
-            writer.println("ID,Name,Mobile,Product,Amount");
+            writer.println("ID,prodName,Price,Stock,ThreshHold");
 
-            for (Customer c : customers) {
-                writer.println(c.getCustId() + "," +
-                        c.getCustomer_name() + "," +
-                        c.getMobile_number() + "," +
-                        c.getProduct_name()+ "," +
-                        c.getTotal_amount());
+            for (Product c : products) {
+                writer.println(c.getId() + "," +
+                        c.getProductName() + "," +
+                        c.getPrice() + "," +
+                        c.getStock() + "," +
+                        c.getThreshHold());
             }
             writer.flush();
             MimeMessage message = mailSender.createMimeMessage();
@@ -62,11 +55,9 @@ public class MailService {
             System.out.println("Mail sent successfully.");
         } catch (Exception e) {
             e.printStackTrace();
-            return "something went wrong";
         } finally {
             csvFile.delete();
         }
-        return "Mail sent successfully.";
+        return "something went wrong";
     }
 }
-

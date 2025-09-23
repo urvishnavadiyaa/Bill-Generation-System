@@ -113,6 +113,5 @@ public class BillService {
     public double calculate_Gst(long value) {
         return value * (18.0 / 100);
     }
-
 }
 
